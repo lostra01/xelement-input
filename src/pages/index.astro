@@ -1,0 +1,55 @@
+---
+import XElement from 'astro-xelement';
+const { Div } = XElement;
+
+const InputFields = ["First Name", "Last Name"];
+
+---
+
+<Div define:vars={{InputFields}} @do={(_, store)=> {
+	store.InputField = InputFields;
+	}} >
+
+	<Div @do={(element, store)=>{
+		store.inputHolder = element;
+		store.pullArray = () => {
+			store.InputFields = window.InputFields;
+		}
+		store.addItem = () =>{
+			let newInput = store.createInput(store.inputHolder, "text", "Middle Name");
+			if(newInput != false){
+				store.inputHolder.appendChild(newInput);
+				store.pullArray();
+			}
+		}
+		store.createInput = window.createInput;
+		}}>
+
+		{InputFields.map((item) => (
+			<input type="text" value={item} />
+		))}
+
+	</Div>
+	<XElement @is="button" @click={(_, store)=> {store.addItem();}}>Add new field</XElement>
+
+</Div>
+
+<script is:inline define:vars={{InputFields}}>
+
+	const createInput = (target, type, value) => {
+
+		let children = [].slice.call(target.getElementsByTagName('input'));
+		let elementExists = children.some(child => child.value == value);
+		if (!elementExists) {
+			InputFields.push(value);
+			let input = document.createElement('input');
+			input.setAttribute('type', type);
+			input.setAttribute('value', value);
+			window.InputFields = InputFields;
+			return input;
+		}
+		return false;
+	}
+	window.createInput = createInput;
+
+</script>
